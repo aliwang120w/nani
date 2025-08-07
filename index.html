@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>笑臉中獎遊戲</title>
+  <style>
+    body {
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f0f0f0;
+    }
+    #smile {
+      font-size: 8rem;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.1s;
+    }
+    #smile:active {
+      transform: scale(1.1);
+    }
+    #message {
+      display: none;
+      font-size: 2rem;
+      color: #27ae60;
+      margin-top: 2rem;
+      text-align: center;
+    }
+    .center-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="center-box">
+    <div id="smile">😄</div>
+    <div id="message">恭喜中獎了！</div>
+  </div>
+  <script>
+    const smile = document.getElementById('smile');
+    const message = document.getElementById('message');
+    smile.addEventListener('click', () => {
+      message.style.display = 'block';
+      smile.style.display = 'none';
+    });
+  </script>
+</body>
+</html>
