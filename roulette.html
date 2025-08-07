@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>幸運轉盤遊戲</title>
+  <style>
+    body {
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #f0f0f0;
+    }
+    .roulette-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #roulette {
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      border: 8px solid #888;
+      background: #fff;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      position: relative;
+      margin-bottom: 2rem;
+      transition: box-shadow 0.2s;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #pointer {
+      width: 0;
+      height: 0;
+      border-left: 24px solid transparent;
+      border-right: 24px solid transparent;
+      border-bottom: 36px solid #e74c3c;
+      position: absolute;
+      top: -36px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+    }
+    #result {
+      font-size: 2rem;
+      color: #27ae60;
+      margin-bottom: 1.5rem;
+      min-height: 2.5rem;
+      text-align: center;
+    }
+    #retry-btn {
+      display: none;
+      padding: 0.7rem 2.2rem;
+      font-size: 1.2rem;
+      background: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 2rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: background 0.2s;
+    }
+    #retry-btn:hover {
+      background: #217dbb;
+    }
+  </style>
+</head>
+<body>
+  <div class="roulette-container">
+    <div id="result"></div>
+    <div id="roulette">
+      <canvas id="wheel" width="300" height="300"></canvas>
+      <div id="pointer"></div>
+    </div>
+    <button id="retry-btn">再玩一次</button>
+  </div>
+  <script>
+    const prizes = [1, 2, 3, 4, 10];
+    const colors = ['#f9ca24', '#f0932b', '#6ab04c', '#22a6b3', '#eb4d4b'];
+    const wheel = document.getElementById('wheel');
+    const ctx = wheel.getContext('2d');
+    const roulette = document.getElementById('roulette');
+    const resultDiv = document.getElementById('result');
+    const retryBtn = document.getElementById('retry-btn');
+    let spinning = false;
+    let currentAngle = 0;
+
+    function drawWheel() {
+      const num = prizes.length;
+      const arc = 2 * Math.PI / num;
+      for (let i = 0; i < num; i++) {
+        ctx.beginPath();
+        ctx.moveTo(150, 150);
+        ctx.arc(150, 150, 150, i * arc, (i + 1) * arc);
+        ctx.closePath();
+        ctx.fillStyle = colors[i];
+        ctx.fill();
+        ctx.save();
+        ctx.translate(150, 150);
+        ctx.rotate(i * arc + arc / 2);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = 'bold 2.2rem sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(prizes[i], 90, 0);
+        ctx.restore();
+      }
+    }
+
+    function spinWheel() {
+      if (spinning) return;
+      spinning = true;
+      resultDiv.textContent = '';
+      retryBtn.style.display = 'none';
+      // 隨機選一個獎項
+      const idx = Math.floor(Math.random() * prizes.length);
+      // 讓轉盤多轉幾圈再停到目標
+      const num = prizes.length;
+      const arc = 2 * Math.PI / num;
+      const targetAngle = (3 * 2 * Math.PI) + (num - idx) * arc - arc / 2;
+      const startAngle = currentAngle % (2 * Math.PI);
+      const totalRotate = targetAngle - startAngle;
+      const duration = 3000; // ms
+      const start = performance.now();
+      function animate(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        // ease out
+        const ease = 1 - Math.pow(1 - progress, 3);
+        currentAngle = startAngle + totalRotate * ease;
+        wheel.style.transform = `rotate(${currentAngle}rad)`;
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          spinning = false;
+          showResult(prizes[idx]);
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
+    function showResult(prize) {
+      if (prize === 10) {
+        resultDiv.textContent = '恭喜中大獎！';
+      } else {
+        resultDiv.textContent = '恭喜中獎！';
+      }
+      retryBtn.style.display = 'inline-block';
+    }
+
+    roulette.addEventListener('click', () => {
+      if (!spinning) spinWheel();
+    });
+    retryBtn.addEventListener('click', () => {
+      resultDiv.textContent = '';
+      retryBtn.style.display = 'none';
+      currentAngle = 0;
+      wheel.style.transform = 'rotate(0rad)';
+    });
+
+    drawWheel();
+  </script>
+</body>
+</html>
